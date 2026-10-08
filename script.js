@@ -1,9 +1,10 @@
 /**
  * Landing Page Interactive Scripts
- * - Evergreen Urgency Countdown Timer
+ * - Evergreen 15-Minute Urgency Countdown Timer
  * - Interactive FAQ Accordion
  * - URL Parameter Forwarding (UTMs)
  * - Mobile Sticky CTA Scroll Trigger
+ * - Cheerful Confetti Celebration on CTA Click
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -102,4 +103,86 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // 5. Zero-Dependency Cheerful Confetti Burst on CTA Clicks
+  function launchConfetti(originX, originY) {
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '99999';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#FF5733', '#FFB800', '#2EC4B6', '#7C5CFC', '#FF6584', '#00B4D8'];
+    const particles = [];
+
+    for (let i = 0; i < 45; i++) {
+      particles.push({
+        x: originX || canvas.width / 2,
+        y: originY || canvas.height / 2,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.8) * 14,
+        gravity: 0.35,
+        rotation: Math.random() * 360,
+        vr: (Math.random() - 0.5) * 10,
+        opacity: 1
+      });
+    }
+
+    let animationId;
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.vr;
+        p.opacity -= 0.015;
+
+        if (p.opacity > 0) {
+          alive = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(p.opacity, 0);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        }
+      });
+
+      if (alive) {
+        animationId = requestAnimationFrame(animate);
+      } else {
+        cancelAnimationFrame(animationId);
+        if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }
+    }
+
+    animate();
+  }
+
+  // Attach celebration confetti to all CTA buttons
+  const ctaButtons = document.querySelectorAll('.btn-primary, .btn-white-gold');
+  ctaButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      launchConfetti(x, y);
+    });
+  });
 });
